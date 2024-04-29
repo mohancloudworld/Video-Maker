@@ -121,12 +121,14 @@ for imagefile in tmp-image-*.png; do
     convert "tmp-overllaped-image-${SUFFIX}.png" -resize ${OUTPUT_WIDTH}x${OUTPUT_HEIGHT}\! "tmp-final-image-${SUFFIX}.png"
     #VIDEO_DURATION=$(echo | awk "{print ${TIME_STAMPS[$((${indx}+1))]}-${TIME_STAMPS[$indx]}}")
     VIDEO_DURATION=${PIC_TIME_DURATIONS[$indx]}
-    ffmpeg -loglevel error -y -loop 1 -i tmp-final-image-${SUFFIX}.png -r 60 -c:v libx264 -qp 0 -pix_fmt yuv420p -t ${VIDEO_DURATION} tmp-segment-${SUFFIX}.mp4
+    ffmpeg -loglevel error -y -loop 1 -i tmp-final-image-${SUFFIX}.png -r 60 -c:v libopenh264 -qp 0 -pix_fmt yuv420p -t ${VIDEO_DURATION} tmp-segment-${SUFFIX}.mp4
     ((++indx))
 done
 
 # generate video & add audio
-ffmpeg -loglevel error -y -f concat -i <(for f in tmp-segment-*.mp4; do echo "file '$PWD/$f'"; done) -c copy tmp-only-video.mkv
+echo "Concating ..."
+ffmpeg -loglevel error -y -f concat -safe 0 -i <(for f in tmp-segment-*.mp4; do echo "file '$PWD/$f'"; done) -c copy tmp-only-video.mkv
+echo "Adding Audio ..."
 ffmpeg -loglevel error -y -i tmp-only-video.mkv -itsoffset ${AUDIO_START_TIME} -i ${AUDIO_FILE} -c copy output.mkv
 
 # remove temporary files
